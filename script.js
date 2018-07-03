@@ -22,7 +22,10 @@ pc1.ontrack = event => {
 pc2.ontrack = event => {
   stream = event.streams[0]
   pc1video.srcObject = stream
-  stream.onremovetrack = e => console.info(e)
+  stream.onremovetrack = e => {
+    console.info(pc1.getReceivers())
+    console.info(pc2.getReceivers())
+  }
 }
 pc2.onremovestream = e => console.info(e)
 
