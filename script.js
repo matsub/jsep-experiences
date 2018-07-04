@@ -2,8 +2,8 @@ var pc1 = new RTCPeerConnection()
 var pc2 = new RTCPeerConnection()
 var pc1video = document.getElementById("pc1video")
 var pc2video = document.getElementById("pc2video")
+var pc2video2 = document.getElementById("pc2video2")
 
-var removingStream = null;
 var removingSender = null;
 
 
@@ -16,16 +16,23 @@ async function getExactVideoDevice(deviceId) {
 }
 
 
+var videoToggle = true
 pc1.ontrack = event => {
-  pc2video.srcObject = event.streams[0]
+  let _pc2video = null
+
+  if (videoToggle) {
+    _pc2video = pc2video
+  } else {
+    _pc2video = pc2video2
+  }
+  videoToggle = !videoToggle
+
+  _pc2video.srcObject = event.streams[0]
 }
 pc2.ontrack = event => {
   stream = event.streams[0]
   pc1video.srcObject = stream
-  stream.onremovetrack = e => {
-    console.info(pc1.getReceivers())
-    console.info(pc2.getReceivers())
-  }
+  stream.onremovetrack = e => console.info(e)
 }
 pc2.onremovestream = e => console.info(e)
 
@@ -60,23 +67,12 @@ pc1.onnegotiationneeded = async event => {
 async function call () {
   pc1stream = await getExactVideoDevice(1)
   pc1sender = pc1.addTrack(pc1stream.getTracks()[0], pc1stream)
-  removingStream = pc1stream
   removingSender = pc1sender
-}
-
-function removeStream() {
-  pc1.removeStream(removingStream)
 }
 
 function removeTrack() {
   pc1.removeTrack(removingSender)
 }
 
-function close() {
-  pc1.close()
-}
-
 document.getElementById("call").addEventListener("click", call)
-document.getElementById("removeStream").addEventListener("click", removeStream)
 document.getElementById("removeTrack").addEventListener("click", removeTrack)
-document.getElementById("close").addEventListener("click", close)
